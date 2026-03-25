@@ -1,7 +1,10 @@
+"use client";
+
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import ShopCard from "@/components/ShopCard";
 import Footer from "@/components/Footer";
+import { useLang } from "@/context/LangContext";
 import styles from "./page.module.css";
 
 const products = [
@@ -17,7 +20,7 @@ const products = [
 
 const shops = [
   { initials: "EY", color: "#1B3358", textColor: "#4FC3F7", name: "El Yasmine Store", category: "Mode", products: 48, rating: 5 },
-  { initials: "TZ", color: "#E8F5E9", textColor: "#2E7D32", name: "TechZone DZ", category: "Électronique", products: 120, rating: 4 },
+  { initials: "TZ", color: "#E8F5E9", textColor: "#2E7D32", name: "TechZone DZ", category: "Tech", products: 120, rating: 4 },
   { initials: "BO", color: "#FCE4EC", textColor: "#C2185B", name: "Beauté d'Orient", category: "Beauté", products: 35, rating: 5 },
   { initials: "SW", color: "#FFF3E0", textColor: "#E65100", name: "StreetWear DZ", category: "Mode", products: 67, rating: 4 },
   { initials: "MD", color: "#E3F2FD", textColor: "#1565C0", name: "Mode DZ", category: "Mode", products: 89, rating: 5 },
@@ -25,16 +28,18 @@ const shops = [
 ];
 
 export default function Home() {
+  const { t } = useLang();
+
   return (
     <main>
       <Header />
 
       <div className={styles.content}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Tendances à Alger</h2>
+          <h2 className={styles.sectionTitle}>{t.home.trending}</h2>
           <div className={styles.sectionActions}>
             <span className={styles.wilayaTag}>📍 Alger</span>
-            <span className={styles.viewAll}>Voir tout →</span>
+            <span className={styles.viewAll}>{t.home.viewAll}</span>
           </div>
         </div>
 
@@ -46,13 +51,13 @@ export default function Home() {
 
         <div className={styles.shopsSection}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Boutiques populaires</h2>
-            <span className={styles.viewAll}>Voir tout →</span>
+            <h2 className={styles.sectionTitle}>{t.home.popularShops}</h2>
+            <span className={styles.viewAll}>{t.home.viewAll}</span>
           </div>
 
           <div className={styles.shopsGrid}>
             {shops.map((shop) => (
-              <ShopCard key={shop.name} {...shop} />
+              <ShopCard key={shop.name} {...shop} productsLabel={t.home.products} />
             ))}
           </div>
         </div>

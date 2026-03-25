@@ -2,12 +2,17 @@
 
 import { useState } from "react";
 import styles from "./RegisterForm.module.css";
+import { useLang } from "@/context/LangContext";
 
 interface RegisterFormProps {
   onSwitchLogin: () => void;
 }
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/;
+
 export default function RegisterForm({ onSwitchLogin }: RegisterFormProps) {
+  const { t } = useLang();
   const [form, setForm] = useState({
     email: "",
     firstName: "",
@@ -17,33 +22,55 @@ export default function RegisterForm({ onSwitchLogin }: RegisterFormProps) {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [touched, setTouched] = useState(false);
+  const [touchedPw, setTouchedPw] = useState(false);
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
 
   const update = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const touch = (field: string) => {
+    setTouchedFields((prev) => ({ ...prev, [field]: true }));
+  };
+
+  const firstNameValid = nameRegex.test(form.firstName);
+  const lastNameValid = nameRegex.test(form.lastName);
+  const emailValid = emailRegex.test(form.email);
+
   const checks = {
+    length: form.password.length >= 8,
     uppercase: /[A-Z]/.test(form.password),
     lowercase: /[a-z]/.test(form.password),
     number: /[0-9]/.test(form.password),
     special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(form.password),
-    length: form.password.length >= 8,
   };
 
-  const allValid = Object.values(checks).every(Boolean);
+  const allValid =
+    Object.values(checks).every(Boolean) &&
+    emailValid &&
+    firstNameValid &&
+    lastNameValid &&
+    form.username.length >= 3 &&
+    form.birthDate !== "";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setTouched(true);
+    setTouchedPw(true);
+    setTouchedFields({
+      firstName: true,
+      lastName: true,
+      email: true,
+      username: true,
+      birthDate: true,
+    });
     if (!allValid) return;
     // TODO: API call
   };
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <h2 className={styles.title}>Créer un compte</h2>
-      <p className={styles.subtitle}>Rejoignez la communauté NBK Market</p>
+      <h2 className={styles.title}>{t.register.title}</h2>
+      <p className={styles.subtitle}>{t.register.subtitle}</p>
 
       <button type="button" className={styles.googleBtn}>
         <svg className={styles.googleIcon} viewBox="0 0 24 24" width="20" height="20">
@@ -52,52 +79,59 @@ export default function RegisterForm({ onSwitchLogin }: RegisterFormProps) {
           <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
         </svg>
-        S&apos;inscrire avec Google
+        {t.register.googleBtn}
       </button>
 
       <div className={styles.divider}>
         <span className={styles.dividerLine}></span>
-        <span className={styles.dividerText}>ou</span>
+        <span className={styles.dividerText}>{t.register.or}</span>
         <span className={styles.dividerLine}></span>
       </div>
 
       <div className={styles.row}>
         <div className={styles.field}>
-          <label className={styles.label}>Prénom</label>
+          <label className={styles.label}>{t.register.firstName}</label>
           <input
             type="text"
-            className={styles.input}
-            placeholder="Votre prénom"
+            className={`${styles.input} ${touchedFields.firstName && form.firstName.length > 0 && !firstNameValid ? styles.inputError : ""}`}
+            placeholder={t.register.firstNamePlaceholder}
             value={form.firstName}
             onChange={(e) => update("firstName", e.target.value)}
+            onBlur={() => touch("firstName")}
             required
-            minLength={2}
             autoComplete="given-name"
           />
+          {touchedFields.firstName && form.firstName.length > 0 && !firstNameValid && (
+            <p className={styles.errorText}>{t.register.nameError}</p>
+          )}
         </div>
         <div className={styles.field}>
-          <label className={styles.label}>Nom</label>
+          <label className={styles.label}>{t.register.lastName}</label>
           <input
             type="text"
-            className={styles.input}
-            placeholder="Votre nom"
+            className={`${styles.input} ${touchedFields.lastName && form.lastName.length > 0 && !lastNameValid ? styles.inputError : ""}`}
+            placeholder={t.register.lastNamePlaceholder}
             value={form.lastName}
             onChange={(e) => update("lastName", e.target.value)}
+            onBlur={() => touch("lastName")}
             required
-            minLength={2}
             autoComplete="family-name"
           />
+          {touchedFields.lastName && form.lastName.length > 0 && !lastNameValid && (
+            <p className={styles.errorText}>{t.register.nameError}</p>
+          )}
         </div>
       </div>
 
       <div className={styles.field}>
-        <label className={styles.label}>Nom d&apos;utilisateur</label>
+        <label className={styles.label}>{t.register.username}</label>
         <input
           type="text"
           className={styles.input}
-          placeholder="Choisissez un pseudo"
+          placeholder={t.register.usernamePlaceholder}
           value={form.username}
           onChange={(e) => update("username", e.target.value.replace(/\s/g, "").toLowerCase())}
+          onBlur={() => touch("username")}
           required
           minLength={3}
           maxLength={20}
@@ -106,41 +140,46 @@ export default function RegisterForm({ onSwitchLogin }: RegisterFormProps) {
       </div>
 
       <div className={styles.field}>
-        <label className={styles.label}>Email</label>
+        <label className={styles.label}>{t.register.email}</label>
         <input
           type="email"
-          className={styles.input}
-          placeholder="votre@email.com"
+          className={`${styles.input} ${touchedFields.email && form.email.length > 0 && !emailValid ? styles.inputError : ""}`}
+          placeholder={t.register.emailPlaceholder}
           value={form.email}
           onChange={(e) => update("email", e.target.value)}
+          onBlur={() => touch("email")}
           required
           autoComplete="email"
         />
+        {touchedFields.email && form.email.length > 0 && !emailValid && (
+          <p className={styles.errorText}>{t.register.emailError}</p>
+        )}
       </div>
 
       <div className={styles.field}>
-        <label className={styles.label}>Date de naissance</label>
+        <label className={styles.label}>{t.register.birthDate}</label>
         <input
           type="date"
           className={styles.input}
           value={form.birthDate}
           onChange={(e) => update("birthDate", e.target.value)}
+          onBlur={() => touch("birthDate")}
           required
           max={new Date().toISOString().split("T")[0]}
         />
       </div>
 
       <div className={styles.field}>
-        <label className={styles.label}>Mot de passe</label>
+        <label className={styles.label}>{t.register.password}</label>
         <div className={styles.passwordWrap}>
           <input
             type={showPassword ? "text" : "password"}
             className={styles.input}
-            placeholder="Créez un mot de passe"
+            placeholder={t.register.passwordPlaceholder}
             value={form.password}
             onChange={(e) => {
               update("password", e.target.value);
-              setTouched(true);
+              setTouchedPw(true);
             }}
             required
             autoComplete="new-password"
@@ -154,35 +193,35 @@ export default function RegisterForm({ onSwitchLogin }: RegisterFormProps) {
           </button>
         </div>
 
-        {touched && form.password.length > 0 && (
+        {touchedPw && form.password.length > 0 && (
           <div className={styles.checks}>
             <span className={checks.length ? styles.checkOk : styles.checkFail}>
-              {checks.length ? "✓" : "✗"} 8 caractères minimum
+              {checks.length ? "✓" : "✗"} {t.login.checks.length}
             </span>
             <span className={checks.uppercase ? styles.checkOk : styles.checkFail}>
-              {checks.uppercase ? "✓" : "✗"} Une majuscule
+              {checks.uppercase ? "✓" : "✗"} {t.login.checks.uppercase}
             </span>
             <span className={checks.lowercase ? styles.checkOk : styles.checkFail}>
-              {checks.lowercase ? "✓" : "✗"} Une minuscule
+              {checks.lowercase ? "✓" : "✗"} {t.login.checks.lowercase}
             </span>
             <span className={checks.number ? styles.checkOk : styles.checkFail}>
-              {checks.number ? "✓" : "✗"} Un chiffre
+              {checks.number ? "✓" : "✗"} {t.login.checks.number}
             </span>
             <span className={checks.special ? styles.checkOk : styles.checkFail}>
-              {checks.special ? "✓" : "✗"} Un caractère spécial
+              {checks.special ? "✓" : "✗"} {t.login.checks.special}
             </span>
           </div>
         )}
       </div>
 
       <button type="submit" className={styles.submitBtn}>
-        Créer mon compte
+        {t.register.submit}
       </button>
 
       <p className={styles.bottomText}>
-        Déjà un compte ?{" "}
+        {t.register.hasAccount}{" "}
         <button type="button" className={styles.linkBtn} onClick={onSwitchLogin}>
-          Se connecter
+          {t.register.login}
         </button>
       </p>
     </form>

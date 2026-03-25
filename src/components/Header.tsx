@@ -3,20 +3,11 @@
 import { useState } from "react";
 import styles from "./Header.module.css";
 import AuthModal from "./AuthModal";
-
-const categories = [
-  "Tout",
-  "Mode",
-  "Électronique",
-  "Maison",
-  "Beauté",
-  "Alimentation",
-  "Artisanat",
-  "Sport",
-];
+import { useLang } from "@/context/LangContext";
 
 export default function Header() {
   const [showAuth, setShowAuth] = useState(false);
+  const { lang, setLang, t } = useLang();
 
   return (
     <>
@@ -27,25 +18,39 @@ export default function Header() {
               NBK<span className={styles.logoAccent}>Market</span>
             </span>
             <nav className={styles.nav}>
-              <a href="#">Explorer</a>
-              <a href="#">Catégories</a>
-              <a href="#">Wilayas</a>
+              <a href="#">{t.header.explore}</a>
+              <a href="#">{t.header.categories}</a>
+              <a href="#">{t.header.wilayas}</a>
             </nav>
           </div>
           <div className={styles.right}>
             <input
               className={styles.search}
               type="text"
-              placeholder="Rechercher un produit, une boutique..."
+              placeholder={t.header.searchPlaceholder}
             />
+            <div className={styles.langSwitch}>
+              <button
+                className={`${styles.langBtn} ${lang === "en" ? styles.langActive : ""}`}
+                onClick={() => setLang("en")}
+              >
+                EN
+              </button>
+              <button
+                className={`${styles.langBtn} ${lang === "fr" ? styles.langActive : ""}`}
+                onClick={() => setLang("fr")}
+              >
+                FR
+              </button>
+            </div>
             <button className={styles.loginBtn} onClick={() => setShowAuth(true)}>
-              Connexion
+              {t.header.login}
             </button>
           </div>
         </div>
 
         <div className={styles.categories}>
-          {categories.map((cat, i) => (
+          {t.categories.map((cat, i) => (
             <button
               key={cat}
               className={`${styles.pill} ${i === 0 ? styles.pillActive : ""}`}

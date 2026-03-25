@@ -96,6 +96,21 @@
   color: #bbb;
 }
 
+.inputError {
+  border-color: #E53935;
+}
+
+.inputError:focus {
+  border-color: #E53935;
+}
+
+.errorText {
+  font-size: 11px;
+  color: #E53935;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
 .passwordWrap {
   position: relative;
 }
@@ -132,7 +147,7 @@
 
 .checkFail {
   font-size: 11px;
-  color: var(--text-gray);
+  color: #E53935;
   font-weight: 500;
 }
 

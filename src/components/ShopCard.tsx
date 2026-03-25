@@ -8,6 +8,7 @@ interface ShopCardProps {
   category: string;
   products: number;
   rating: number;
+  productsLabel?: string;
 }
 
 export default function ShopCard({
@@ -18,6 +19,7 @@ export default function ShopCard({
   category,
   products,
   rating,
+  productsLabel = "products",
 }: ShopCardProps) {
   return (
     <div className={styles.card}>
@@ -30,7 +32,7 @@ export default function ShopCard({
       <div>
         <p className={styles.name}>{name}</p>
         <p className={styles.meta}>
-          {category} · {products} produits
+          {category} · {products} {productsLabel}
         </p>
         <p className={styles.stars}>
           {"★".repeat(rating)}
