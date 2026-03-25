@@ -189,3 +189,13 @@
   color: var(--text-gray);
   margin-top: 16px;
 }
+
+@media (max-width: 480px) {
+  .row {
+    flex-direction: column;
+    gap: 0;
+  }
+  .title {
+    font-size: 20px;
+  }
+}

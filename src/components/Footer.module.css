@@ -69,3 +69,45 @@
   color: rgba(255, 255, 255, 0.3);
   text-align: center;
 }
+
+@media (min-width: 1800px) {
+  .top {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 40px 48px 32px;
+  }
+  .bottom {
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .top {
+    flex-direction: column;
+    padding: 32px 16px 24px;
+    gap: 28px;
+  }
+  .brand {
+    max-width: 100%;
+  }
+  .links {
+    gap: 32px;
+  }
+}
+
+@media (max-width: 600px) {
+  .top {
+    padding: 24px 12px 20px;
+  }
+  .links {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .bottom {
+    padding: 12px;
+  }
+  .bottom p {
+    font-size: 11px;
+  }
+}

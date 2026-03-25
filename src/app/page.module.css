@@ -1,5 +1,7 @@
 .content {
   padding: 24px 32px;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 .sectionHeader {
@@ -55,4 +57,69 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
+}
+
+/* Large 25"+ */
+@media (min-width: 1800px) {
+  .content {
+    padding: 32px 48px;
+  }
+  .productsGrid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .shopsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .content {
+    padding: 20px 16px;
+  }
+  .productsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .shopsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .content {
+    padding: 14px 12px;
+  }
+  .sectionTitle {
+    font-size: 16px;
+  }
+  .productsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .shopsGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .wilayaTag {
+    display: none;
+  }
+}
+
+/* Galaxy Z Fold 5 */
+@media (max-width: 380px) {
+  .content {
+    padding: 10px 8px;
+  }
+  .sectionTitle {
+    font-size: 14px;
+  }
+  .viewAll {
+    font-size: 11px;
+  }
+  .productsGrid {
+    gap: 8px;
+  }
 }

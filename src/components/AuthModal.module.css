@@ -42,3 +42,22 @@
 .closeBtn:hover {
   background: var(--bg-gray);
 }
+
+@media (max-width: 480px) {
+  .modal {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    padding: 24px 16px;
+    min-height: 100vh;
+  }
+  .overlay {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 380px) {
+  .modal {
+    padding: 20px 12px;
+  }
+}

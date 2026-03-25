@@ -35,3 +35,10 @@ a {
   text-decoration: none;
   color: inherit;
 }
+
+@media (min-width: 2200px) {
+  body {
+    max-width: 2200px;
+    margin: 0 auto;
+  }
+}
