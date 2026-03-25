@@ -1,0 +1,55 @@
+.card {
+  background: var(--white);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+
+.card:hover {
+  box-shadow: 0 4px 20px rgba(11, 26, 46, 0.1);
+  transform: translateY(-2px);
+}
+
+.image {
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+}
+
+.info {
+  padding: 14px 16px;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.shop {
+  font-size: 12px;
+  color: var(--text-gray);
+  margin-top: 4px;
+}
+
+.bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.location {
+  font-size: 11px;
+  color: var(--accent);
+}

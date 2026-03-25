@@ -1,0 +1,58 @@
+.content {
+  padding: 24px 32px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.sectionActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wilayaTag {
+  font-size: 12px;
+  color: var(--text-dark);
+  background: var(--white);
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.viewAll {
+  font-size: 12px;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.viewAll:hover {
+  text-decoration: underline;
+}
+
+.productsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.shopsSection {
+  margin-top: 36px;
+}
+
+.shopsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
