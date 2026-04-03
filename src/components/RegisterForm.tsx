@@ -3,40 +3,33 @@
 import { useState } from "react";
 import styles from "./RegisterForm.module.css";
 import { useLang } from "@/context/LangContext";
+import { api } from "@/services/api";
 
 interface RegisterFormProps {
   onSwitchLogin: () => void;
+  onNeedsVerify: (email: string) => void;
 }
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/;
+const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'\-]+$/;
 
-export default function RegisterForm({ onSwitchLogin }: RegisterFormProps) {
-  const { t } = useLang();
+export default function RegisterForm({ onSwitchLogin, onNeedsVerify }: RegisterFormProps) {
+  const { lang, t } = useLang();
   const [form, setForm] = useState({
-    email: "",
-    firstName: "",
-    lastName: "",
-    username: "",
-    birthDate: "",
-    password: "",
+    email: "", firstName: "", lastName: "", username: "", birthDate: "", password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [touchedPw, setTouchedPw] = useState(false);
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
+  const [serverError, setServerError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const update = (field: string, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
+  const update = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }));
+  const touch = (field: string) => setTouchedFields((p) => ({ ...p, [field]: true }));
 
-  const touch = (field: string) => {
-    setTouchedFields((prev) => ({ ...prev, [field]: true }));
-  };
-
-  const firstNameValid = nameRegex.test(form.firstName);
-  const lastNameValid = nameRegex.test(form.lastName);
+  const fnValid = nameRegex.test(form.firstName);
+  const lnValid = nameRegex.test(form.lastName);
   const emailValid = emailRegex.test(form.email);
-
   const checks = {
     length: form.password.length >= 8,
     uppercase: /[A-Z]/.test(form.password),
@@ -44,27 +37,35 @@ export default function RegisterForm({ onSwitchLogin }: RegisterFormProps) {
     number: /[0-9]/.test(form.password),
     special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(form.password),
   };
+  const allChecks = Object.values(checks).every(Boolean);
 
-  const allValid =
-    Object.values(checks).every(Boolean) &&
-    emailValid &&
-    firstNameValid &&
-    lastNameValid &&
-    form.username.length >= 3 &&
-    form.birthDate !== "";
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTouchedPw(true);
-    setTouchedFields({
-      firstName: true,
-      lastName: true,
-      email: true,
-      username: true,
-      birthDate: true,
+    setTouchedFields({ firstName: true, lastName: true, email: true, username: true, birthDate: true });
+    setServerError("");
+    if (!fnValid || !lnValid || !emailValid || !allChecks || form.username.length < 3) return;
+
+    setLoading(true);
+    const res = await api.auth.register({
+      email: form.email,
+      password: form.password,
+      first_name: form.firstName,
+      last_name: form.lastName,
+      username: form.username,
+      birth_date: form.birthDate || undefined,
+      lang,
     });
-    if (!allValid) return;
-    // TODO: API call
+    setLoading(false);
+
+    if (res.error) {
+      if (res.error.includes("Email")) setServerError(t.register.emailTaken);
+      else if (res.error.includes("Username") || res.error.includes("username")) setServerError(t.register.usernameError);
+      else setServerError(res.error);
+      return;
+    }
+
+    onNeedsVerify(form.email);
   };
 
   return (
@@ -88,141 +89,73 @@ export default function RegisterForm({ onSwitchLogin }: RegisterFormProps) {
         <span className={styles.dividerLine}></span>
       </div>
 
+      {serverError && <p className={styles.serverError}>{serverError}</p>}
+
       <div className={styles.row}>
         <div className={styles.field}>
           <label className={styles.label}>{t.register.firstName}</label>
-          <input
-            type="text"
-            className={`${styles.input} ${touchedFields.firstName && form.firstName.length > 0 && !firstNameValid ? styles.inputError : ""}`}
-            placeholder={t.register.firstNamePlaceholder}
-            value={form.firstName}
-            onChange={(e) => update("firstName", e.target.value)}
-            onBlur={() => touch("firstName")}
-            required
-            autoComplete="given-name"
-          />
-          {touchedFields.firstName && form.firstName.length > 0 && !firstNameValid && (
-            <p className={styles.errorText}>{t.register.nameError}</p>
-          )}
+          <input type="text" className={`${styles.input} ${touchedFields.firstName && form.firstName.length > 0 && !fnValid ? styles.inputError : ""}`}
+            placeholder={t.register.firstNamePlaceholder} value={form.firstName}
+            onChange={(e) => update("firstName", e.target.value)} onBlur={() => touch("firstName")} required autoComplete="given-name" />
+          {touchedFields.firstName && form.firstName.length > 0 && !fnValid && <p className={styles.errorText}>{t.register.nameError}</p>}
         </div>
         <div className={styles.field}>
           <label className={styles.label}>{t.register.lastName}</label>
-          <input
-            type="text"
-            className={`${styles.input} ${touchedFields.lastName && form.lastName.length > 0 && !lastNameValid ? styles.inputError : ""}`}
-            placeholder={t.register.lastNamePlaceholder}
-            value={form.lastName}
-            onChange={(e) => update("lastName", e.target.value)}
-            onBlur={() => touch("lastName")}
-            required
-            autoComplete="family-name"
-          />
-          {touchedFields.lastName && form.lastName.length > 0 && !lastNameValid && (
-            <p className={styles.errorText}>{t.register.nameError}</p>
-          )}
+          <input type="text" className={`${styles.input} ${touchedFields.lastName && form.lastName.length > 0 && !lnValid ? styles.inputError : ""}`}
+            placeholder={t.register.lastNamePlaceholder} value={form.lastName}
+            onChange={(e) => update("lastName", e.target.value)} onBlur={() => touch("lastName")} required autoComplete="family-name" />
+          {touchedFields.lastName && form.lastName.length > 0 && !lnValid && <p className={styles.errorText}>{t.register.nameError}</p>}
         </div>
       </div>
 
       <div className={styles.field}>
         <label className={styles.label}>{t.register.username}</label>
-        <input
-          type="text"
-          className={styles.input}
-          placeholder={t.register.usernamePlaceholder}
-          value={form.username}
-          onChange={(e) => update("username", e.target.value.replace(/\s/g, "").toLowerCase())}
-          onBlur={() => touch("username")}
-          required
-          minLength={3}
-          maxLength={20}
-          autoComplete="username"
-        />
+        <input type="text" className={styles.input} placeholder={t.register.usernamePlaceholder} value={form.username}
+          onChange={(e) => update("username", e.target.value.replace(/\s/g, "").toLowerCase())} required minLength={3} maxLength={20} autoComplete="username" />
       </div>
 
       <div className={styles.field}>
         <label className={styles.label}>{t.register.email}</label>
-        <input
-          type="email"
-          className={`${styles.input} ${touchedFields.email && form.email.length > 0 && !emailValid ? styles.inputError : ""}`}
-          placeholder={t.register.emailPlaceholder}
-          value={form.email}
-          onChange={(e) => update("email", e.target.value)}
-          onBlur={() => touch("email")}
-          required
-          autoComplete="email"
-        />
-        {touchedFields.email && form.email.length > 0 && !emailValid && (
-          <p className={styles.errorText}>{t.register.emailError}</p>
-        )}
+        <input type="email" className={`${styles.input} ${touchedFields.email && form.email.length > 0 && !emailValid ? styles.inputError : ""}`}
+          placeholder={t.register.emailPlaceholder} value={form.email}
+          onChange={(e) => update("email", e.target.value)} onBlur={() => touch("email")} required autoComplete="email" />
+        {touchedFields.email && form.email.length > 0 && !emailValid && <p className={styles.errorText}>{t.register.emailError}</p>}
       </div>
 
       <div className={styles.field}>
         <label className={styles.label}>{t.register.birthDate}</label>
-        <input
-          type="date"
-          className={styles.input}
-          value={form.birthDate}
-          onChange={(e) => update("birthDate", e.target.value)}
-          onBlur={() => touch("birthDate")}
-          required
-          max={new Date().toISOString().split("T")[0]}
-        />
+        <input type="date" className={styles.input} value={form.birthDate}
+          onChange={(e) => update("birthDate", e.target.value)} required max={new Date().toISOString().split("T")[0]} />
       </div>
 
       <div className={styles.field}>
         <label className={styles.label}>{t.register.password}</label>
         <div className={styles.passwordWrap}>
-          <input
-            type={showPassword ? "text" : "password"}
-            className={styles.input}
-            placeholder={t.register.passwordPlaceholder}
-            value={form.password}
-            onChange={(e) => {
-              update("password", e.target.value);
-              setTouchedPw(true);
-            }}
-            required
-            autoComplete="new-password"
-          />
-          <button
-            type="button"
-            className={styles.eyeBtn}
-            onClick={() => setShowPassword(!showPassword)}
-          >
+          <input type={showPassword ? "text" : "password"} className={styles.input}
+            placeholder={t.register.passwordPlaceholder} value={form.password}
+            onChange={(e) => { update("password", e.target.value); setTouchedPw(true); }} required autoComplete="new-password" />
+          <button type="button" className={styles.eyeBtn} onClick={() => setShowPassword(!showPassword)}>
             {showPassword ? "🙈" : "👁️"}
           </button>
         </div>
-
         {touchedPw && form.password.length > 0 && (
           <div className={styles.checks}>
-            <span className={checks.length ? styles.checkOk : styles.checkFail}>
-              {checks.length ? "✓" : "✗"} {t.login.checks.length}
-            </span>
-            <span className={checks.uppercase ? styles.checkOk : styles.checkFail}>
-              {checks.uppercase ? "✓" : "✗"} {t.login.checks.uppercase}
-            </span>
-            <span className={checks.lowercase ? styles.checkOk : styles.checkFail}>
-              {checks.lowercase ? "✓" : "✗"} {t.login.checks.lowercase}
-            </span>
-            <span className={checks.number ? styles.checkOk : styles.checkFail}>
-              {checks.number ? "✓" : "✗"} {t.login.checks.number}
-            </span>
-            <span className={checks.special ? styles.checkOk : styles.checkFail}>
-              {checks.special ? "✓" : "✗"} {t.login.checks.special}
-            </span>
+            {Object.entries(checks).map(([key, valid]) => (
+              <span key={key} className={valid ? styles.checkOk : styles.checkFail}>
+                {valid ? "✓" : "✗"} {t.login.checks[key as keyof typeof t.login.checks]}
+              </span>
+            ))}
           </div>
         )}
       </div>
 
-      <button type="submit" className={styles.submitBtn}>
-        {t.register.submit}
+      <button type="submit" className={styles.submitBtn} disabled={loading}>
+        {loading ? "..." : t.register.submit}
       </button>
 
       <p className={styles.bottomText}>
         {t.register.hasAccount}{" "}
-        <button type="button" className={styles.linkBtn} onClick={onSwitchLogin}>
-          {t.register.login}
-        </button>
+        <button type="button" className={styles.linkBtn} onClick={onSwitchLogin}>{t.register.login}</button>
       </p>
     </form>
   );

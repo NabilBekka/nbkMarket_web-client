@@ -4,10 +4,12 @@ import { useState } from "react";
 import styles from "./Header.module.css";
 import AuthModal from "./AuthModal";
 import { useLang } from "@/context/LangContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Header() {
   const [showAuth, setShowAuth] = useState(false);
   const { lang, setLang, t } = useLang();
+  const { user, logout } = useAuth();
 
   return (
     <>
@@ -24,20 +26,20 @@ export default function Header() {
             </nav>
           </div>
           <div className={styles.right}>
-            <input
-              className={styles.search}
-              type="text"
-              placeholder={t.header.searchPlaceholder}
-            />
-            <button className={styles.loginBtn} onClick={() => setShowAuth(true)}>
-              {t.header.login}
-            </button>
+            <input className={styles.search} type="text" placeholder={t.header.searchPlaceholder} />
+            {user ? (
+              <div className={styles.userSection}>
+                <span className={styles.userName}>{user.first_name}</span>
+                <button className={styles.logoutBtn} onClick={logout}>{t.header.logout}</button>
+              </div>
+            ) : (
+              <button className={styles.loginBtn} onClick={() => setShowAuth(true)}>
+                {t.header.login}
+              </button>
+            )}
             <div className={styles.langSwitch}>
-              <button
-                className={`${styles.langBtn} ${lang === "en" ? styles.langActive : ""}`}
-                onClick={() => setLang("en")}
-                title="English"
-              >
+              <button className={`${styles.langBtn} ${lang === "en" ? styles.langActive : ""}`}
+                onClick={() => setLang("en")} title="English">
                 <svg width="20" height="14" viewBox="0 0 60 42" className={styles.flag}>
                   <rect width="60" height="42" fill="#012169"/>
                   <path d="M0,0 L60,42 M60,0 L0,42" stroke="#fff" strokeWidth="7"/>
@@ -46,11 +48,8 @@ export default function Header() {
                   <path d="M30,0 V42 M0,21 H60" stroke="#C8102E" strokeWidth="7"/>
                 </svg>
               </button>
-              <button
-                className={`${styles.langBtn} ${lang === "fr" ? styles.langActive : ""}`}
-                onClick={() => setLang("fr")}
-                title="Français"
-              >
+              <button className={`${styles.langBtn} ${lang === "fr" ? styles.langActive : ""}`}
+                onClick={() => setLang("fr")} title="Français">
                 <svg width="20" height="14" viewBox="0 0 60 42" className={styles.flag}>
                   <rect width="20" height="42" fill="#002395"/>
                   <rect x="20" width="20" height="42" fill="#fff"/>
@@ -63,12 +62,7 @@ export default function Header() {
 
         <div className={styles.categories}>
           {t.categories.map((cat, i) => (
-            <button
-              key={cat}
-              className={`${styles.pill} ${i === 0 ? styles.pillActive : ""}`}
-            >
-              {cat}
-            </button>
+            <button key={cat} className={`${styles.pill} ${i === 0 ? styles.pillActive : ""}`}>{cat}</button>
           ))}
         </div>
       </header>

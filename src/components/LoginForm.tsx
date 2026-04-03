@@ -3,29 +3,33 @@
 import { useState, useEffect } from "react";
 import styles from "./LoginForm.module.css";
 import { useLang } from "@/context/LangContext";
+import { useAuth } from "@/context/AuthContext";
+import { api } from "@/services/api";
 
 interface LoginFormProps {
   onSwitchRegister: () => void;
   onSwitchForgot: () => void;
+  onNeedsVerify: (email: string) => void;
+  onSuccess: () => void;
 }
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default function LoginForm({ onSwitchRegister, onSwitchForgot }: LoginFormProps) {
+export default function LoginForm({ onSwitchRegister, onSwitchForgot, onNeedsVerify, onSuccess }: LoginFormProps) {
   const { t } = useLang();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [touchedPw, setTouchedPw] = useState(false);
   const [touchedEmail, setTouchedEmail] = useState(false);
+  const [serverError, setServerError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("nbk-remember-email");
-    if (saved) {
-      setEmail(saved);
-      setRememberMe(true);
-    }
+    if (saved) { setEmail(saved); setRememberMe(true); }
   }, []);
 
   const emailValid = emailRegex.test(email);
@@ -38,21 +42,35 @@ export default function LoginForm({ onSwitchRegister, onSwitchForgot }: LoginFor
     special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
   };
 
-  const allValid = Object.values(checks).every(Boolean) && emailValid;
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTouchedPw(true);
     setTouchedEmail(true);
-    if (!allValid) return;
+    setServerError("");
+    if (!emailValid) return;
 
-    if (rememberMe) {
-      localStorage.setItem("nbk-remember-email", email);
-    } else {
-      localStorage.removeItem("nbk-remember-email");
+    setLoading(true);
+    const res = await api.auth.login({ email, password });
+    setLoading(false);
+
+    if (res.error) {
+      if (res.data && (res.data as Record<string, unknown>).needsVerification) {
+        onNeedsVerify(email);
+        return;
+      }
+      setServerError(t.login.error);
+      return;
     }
 
-    // TODO: API call
+    if (res.data) {
+      if (rememberMe) {
+        localStorage.setItem("nbk-remember-email", email);
+      } else {
+        localStorage.removeItem("nbk-remember-email");
+      }
+      login(res.data.accessToken, res.data.user as Parameters<typeof login>[1]);
+      onSuccess();
+    }
   };
 
   return (
@@ -76,90 +94,52 @@ export default function LoginForm({ onSwitchRegister, onSwitchForgot }: LoginFor
         <span className={styles.dividerLine}></span>
       </div>
 
+      {serverError && <p className={styles.serverError}>{serverError}</p>}
+
       <div className={styles.field}>
         <label className={styles.label}>{t.login.email}</label>
-        <input
-          type="email"
-          className={`${styles.input} ${touchedEmail && !emailValid && email.length > 0 ? styles.inputError : ""}`}
-          placeholder={t.login.emailPlaceholder}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onBlur={() => setTouchedEmail(true)}
-          required
-        />
-        {touchedEmail && !emailValid && email.length > 0 && (
-          <p className={styles.errorText}>{t.login.emailError}</p>
-        )}
+        <input type="email" className={`${styles.input} ${touchedEmail && !emailValid && email.length > 0 ? styles.inputError : ""}`}
+          placeholder={t.login.emailPlaceholder} value={email}
+          onChange={(e) => setEmail(e.target.value)} onBlur={() => setTouchedEmail(true)} required />
+        {touchedEmail && !emailValid && email.length > 0 && <p className={styles.errorText}>{t.login.emailError}</p>}
       </div>
 
       <div className={styles.field}>
         <label className={styles.label}>{t.login.password}</label>
         <div className={styles.passwordWrap}>
-          <input
-            type={showPassword ? "text" : "password"}
-            className={styles.input}
-            placeholder={t.login.passwordPlaceholder}
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              setTouchedPw(true);
-            }}
-            required
-          />
-          <button
-            type="button"
-            className={styles.eyeBtn}
-            onClick={() => setShowPassword(!showPassword)}
-          >
+          <input type={showPassword ? "text" : "password"} className={styles.input}
+            placeholder={t.login.passwordPlaceholder} value={password}
+            onChange={(e) => { setPassword(e.target.value); setTouchedPw(true); }} required />
+          <button type="button" className={styles.eyeBtn} onClick={() => setShowPassword(!showPassword)}>
             {showPassword ? "🙈" : "👁️"}
           </button>
         </div>
-
         {touchedPw && password.length > 0 && (
           <div className={styles.checks}>
-            <span className={checks.length ? styles.checkOk : styles.checkFail}>
-              {checks.length ? "✓" : "✗"} {t.login.checks.length}
-            </span>
-            <span className={checks.uppercase ? styles.checkOk : styles.checkFail}>
-              {checks.uppercase ? "✓" : "✗"} {t.login.checks.uppercase}
-            </span>
-            <span className={checks.lowercase ? styles.checkOk : styles.checkFail}>
-              {checks.lowercase ? "✓" : "✗"} {t.login.checks.lowercase}
-            </span>
-            <span className={checks.number ? styles.checkOk : styles.checkFail}>
-              {checks.number ? "✓" : "✗"} {t.login.checks.number}
-            </span>
-            <span className={checks.special ? styles.checkOk : styles.checkFail}>
-              {checks.special ? "✓" : "✗"} {t.login.checks.special}
-            </span>
+            {Object.entries(checks).map(([key, valid]) => (
+              <span key={key} className={valid ? styles.checkOk : styles.checkFail}>
+                {valid ? "✓" : "✗"} {t.login.checks[key as keyof typeof t.login.checks]}
+              </span>
+            ))}
           </div>
         )}
       </div>
 
       <div className={styles.optionsRow}>
         <label className={styles.rememberLabel}>
-          <input
-            type="checkbox"
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-            className={styles.checkbox}
-          />
+          <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className={styles.checkbox} />
           {t.login.rememberMe}
         </label>
-        <button type="button" className={styles.linkBtn} onClick={onSwitchForgot}>
-          {t.login.forgotPassword}
-        </button>
+        <button type="button" className={styles.linkBtn} onClick={onSwitchForgot}>{t.login.forgotPassword}</button>
       </div>
 
-      <button type="submit" className={styles.submitBtn}>
-        {t.login.submit}
+      <button type="submit" className={styles.submitBtn} disabled={loading}>
+        {loading ? "..." : t.login.submit}
       </button>
 
       <p className={styles.bottomText}>
         {t.login.noAccount}{" "}
-        <button type="button" className={styles.linkBtn} onClick={onSwitchRegister}>
-          {t.login.register}
-        </button>
+        <button type="button" className={styles.linkBtn} onClick={onSwitchRegister}>{t.login.register}</button>
       </p>
     </form>
   );

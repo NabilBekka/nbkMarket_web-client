@@ -11,6 +11,17 @@
   margin-bottom: 24px;
 }
 
+.serverError {
+  background: #FFF0F0;
+  color: #E53935;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  border: 1px solid #FFCDD2;
+}
+
 .googleBtn {
   width: 100%;
   display: flex;
