@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { api } from "@/services/api";
+import { useLang } from "@/context/LangContext";
 
 export interface User {
   id: string;
@@ -36,14 +37,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { setLang } = useLang();
+
+  const applyUserLang = (userData: User) => {
+    if (userData.lang === "en" || userData.lang === "fr") {
+      setLang(userData.lang);
+    }
+  };
 
   useEffect(() => {
     const savedToken = localStorage.getItem("nbk-access-token");
     if (savedToken) {
       api.auth.getMe(savedToken).then((res) => {
         if (res.data?.user) {
-          setUser(res.data.user as User);
+          const u = res.data.user as User;
+          setUser(u);
           setAccessToken(savedToken);
+          applyUserLang(u);
         } else {
           api.auth.refreshToken().then((refresh) => {
             if (refresh.data?.accessToken) {
@@ -52,7 +62,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setAccessToken(newToken);
               api.auth.getMe(newToken).then((meRes) => {
                 if (meRes.data?.user) {
-                  setUser(meRes.data.user as User);
+                  const u = meRes.data.user as User;
+                  setUser(u);
+                  applyUserLang(u);
                 }
               });
             } else {
@@ -70,24 +82,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setAccessToken(token);
           api.auth.getMe(token).then((meRes) => {
             if (meRes.data?.user) {
-              setUser(meRes.data.user as User);
+              const u = meRes.data.user as User;
+              setUser(u);
+              applyUserLang(u);
             }
           });
         }
         setIsLoading(false);
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = (token: string, userData: User) => {
     localStorage.setItem("nbk-access-token", token);
     setAccessToken(token);
     setUser(userData);
-    // Sync language preference from user profile
-    if (userData.lang) {
-      localStorage.setItem("nbk-lang", userData.lang);
-      document.documentElement.lang = userData.lang;
-    }
+    applyUserLang(userData);
   };
 
   const logout = async () => {

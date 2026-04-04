@@ -10,6 +10,20 @@ import { api } from "@/services/api";
 import type { User } from "@/context/AuthContext";
 import styles from "./page.module.css";
 
+function formatDate(iso: string | undefined | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateInput(iso: string | undefined | null): string {
+  if (!iso) return "";
+  return formatDate(iso);
+}
+
 export default function SettingsPage() {
   const { t } = useLang();
   const { user, accessToken, updateUser, logout } = useAuth();
@@ -46,14 +60,15 @@ export default function SettingsPage() {
     { key: "last_name", label: t.settings.lastName, value: user.last_name, editable: true },
     { key: "username", label: t.settings.username, value: user.username, editable: true },
     { key: "id", label: t.settings.id, value: user.id.slice(0, 8).toUpperCase(), editable: false },
-    { key: "birth_date", label: t.settings.birthDate, value: user.birth_date || "—", editable: true, type: "date" },
+    { key: "birth_date", label: t.settings.birthDate, value: formatDate(user.birth_date), editable: true, type: "date" },
     { key: "email", label: t.settings.email, value: user.email, editable: true, type: "email" },
     { key: "new_password", label: t.settings.password, value: t.settings.passwordHidden, editable: true, type: "password" },
   ];
 
   const startEdit = (key: string, currentValue: string) => {
+    const editVal = key === "new_password" ? "" : key === "birth_date" ? formatDateInput(user.birth_date) : currentValue;
     setEditing((prev) => ({ ...prev, [key]: true }));
-    setEditValues((prev) => ({ ...prev, [key]: key === "new_password" ? "" : currentValue }));
+    setEditValues((prev) => ({ ...prev, [key]: editVal }));
     setSaveSuccess(false);
     setSaveError("");
   };
@@ -69,6 +84,13 @@ export default function SettingsPage() {
 
   const hasEdits = Object.values(editing).some(Boolean);
 
+  function translateError(err: string): string {
+    if (err.includes("Incorrect password")) return t.settings.saveError;
+    if (err.includes("Email already")) return t.register.emailTaken;
+    if (err.includes("Username already") || err.includes("username already")) return t.register.usernameError;
+    return err;
+  }
+
   const handleSave = async () => {
     setSaveSuccess(false);
     setSaveError("");
@@ -78,7 +100,6 @@ export default function SettingsPage() {
       return;
     }
 
-    // Build updates object from edited fields only
     const updates: Record<string, string> = {};
     for (const [key, isEditing] of Object.entries(editing)) {
       if (isEditing && editValues[key] !== undefined && editValues[key] !== "") {
@@ -87,7 +108,6 @@ export default function SettingsPage() {
     }
 
     if (Object.keys(updates).length === 0) {
-      setSaveError(t.settings.saveError);
       return;
     }
 
@@ -99,7 +119,7 @@ export default function SettingsPage() {
     setSaveLoading(false);
 
     if (res.error) {
-      setSaveError(res.error === "Incorrect password" ? t.settings.saveError : res.error);
+      setSaveError(translateError(res.error));
       return;
     }
 
@@ -129,7 +149,7 @@ export default function SettingsPage() {
 
     if (res.error) {
       setShowDeleteModal(false);
-      setDeleteError(res.error === "Incorrect password" ? t.settings.deleteError : res.error);
+      setDeleteError(translateError(res.error));
       return;
     }
 
@@ -145,6 +165,11 @@ export default function SettingsPage() {
       <div className={styles.container}>
         <a href="/" className={styles.backLink}>{t.settings.back}</a>
         <h1 className={styles.title}>{t.settings.title}</h1>
+
+        {/* Success message — always visible */}
+        {saveSuccess && (
+          <div className={styles.successMsgTop}>✓ {t.settings.saveSuccess}</div>
+        )}
 
         {/* Account info */}
         <section className={styles.section}>
@@ -210,7 +235,6 @@ export default function SettingsPage() {
                 {saveLoading ? "..." : t.settings.save}
               </button>
 
-              {saveSuccess && <p className={styles.successMsg}>✓ {t.settings.saveSuccess}</p>}
               {saveError && <p className={styles.errorMsg}>{saveError}</p>}
             </div>
           )}
@@ -248,7 +272,6 @@ export default function SettingsPage() {
 
       <Footer />
 
-      {/* Delete confirmation modal */}
       {showDeleteModal && (
         <div className={styles.overlay} onClick={() => setShowDeleteModal(false)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
