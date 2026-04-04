@@ -11,10 +11,11 @@ async function request<T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   try {
+    const { headers: optHeaders, ...restOptions } = options;
     const res = await fetch(`${API_URL}${endpoint}`, {
-      headers: { "Content-Type": "application/json", ...options.headers },
+      headers: { "Content-Type": "application/json", ...(optHeaders as Record<string, string>) },
       credentials: "include",
-      ...options,
+      ...restOptions,
     });
 
     const data = await res.json();
@@ -104,5 +105,29 @@ export const api = {
 
     getMe: (token: string) =>
       request<{ user: Record<string, unknown> }>("/auth/me", { headers: authHeaders(token) }),
+
+    updateProfile: (
+      token: string,
+      body: { password: string; updates: Record<string, string> }
+    ) =>
+      request<{ user: Record<string, unknown> }>("/auth/profile", {
+        method: "PUT",
+        headers: authHeaders(token),
+        body: JSON.stringify(body),
+      }),
+
+    deleteAccount: (token: string, body: { password: string }) =>
+      request("/auth/account", {
+        method: "DELETE",
+        headers: authHeaders(token),
+        body: JSON.stringify(body),
+      }),
+
+    updateLang: (token: string, body: { lang: string }) =>
+      request("/auth/lang", {
+        method: "PUT",
+        headers: authHeaders(token),
+        body: JSON.stringify(body),
+      }),
   },
 };

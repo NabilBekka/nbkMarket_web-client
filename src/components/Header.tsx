@@ -5,12 +5,13 @@ import styles from "./Header.module.css";
 import AuthModal from "./AuthModal";
 import { useLang } from "@/context/LangContext";
 import { useAuth } from "@/context/AuthContext";
+import { api } from "@/services/api";
 
 export default function Header() {
   const [showAuth, setShowAuth] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const { lang, setLang, t } = useLang();
-  const { user, logout } = useAuth();
+  const { user, accessToken, logout } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -23,6 +24,13 @@ export default function Header() {
     if (showDropdown) document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [showDropdown]);
+
+  const handleLangChange = (newLang: "en" | "fr") => {
+    setLang(newLang);
+    if (user && accessToken) {
+      api.auth.updateLang(accessToken, { lang: newLang });
+    }
+  };
 
   const handleLogout = async () => {
     setShowDropdown(false);
@@ -67,13 +75,13 @@ export default function Header() {
                     <div className={styles.dropdownLang}>
                       <button
                         className={`${styles.dropdownLangBtn} ${lang === "en" ? styles.dropdownLangActive : ""}`}
-                        onClick={() => setLang("en")}
+                        onClick={() => handleLangChange("en")}
                       >
                         🇬🇧 English
                       </button>
                       <button
                         className={`${styles.dropdownLangBtn} ${lang === "fr" ? styles.dropdownLangActive : ""}`}
-                        onClick={() => setLang("fr")}
+                        onClick={() => handleLangChange("fr")}
                       >
                         🇫🇷 Français
                       </button>
@@ -97,7 +105,7 @@ export default function Header() {
                 </button>
                 <div className={styles.langSwitch}>
                   <button className={`${styles.langBtn} ${lang === "en" ? styles.langActive : ""}`}
-                    onClick={() => setLang("en")} title="English">
+                    onClick={() => handleLangChange("en")} title="English">
                     <svg width="20" height="14" viewBox="0 0 60 42" className={styles.flag}>
                       <rect width="60" height="42" fill="#012169"/>
                       <path d="M0,0 L60,42 M60,0 L0,42" stroke="#fff" strokeWidth="7"/>
@@ -107,7 +115,7 @@ export default function Header() {
                     </svg>
                   </button>
                   <button className={`${styles.langBtn} ${lang === "fr" ? styles.langActive : ""}`}
-                    onClick={() => setLang("fr")} title="Français">
+                    onClick={() => handleLangChange("fr")} title="Français">
                     <svg width="20" height="14" viewBox="0 0 60 42" className={styles.flag}>
                       <rect width="20" height="42" fill="#002395"/>
                       <rect x="20" width="20" height="42" fill="#fff"/>

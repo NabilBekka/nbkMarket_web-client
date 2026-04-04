@@ -3,12 +3,13 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { api } from "@/services/api";
 
-interface User {
+export interface User {
   id: string;
   email: string;
   first_name: string;
   last_name: string;
   username: string;
+  birth_date?: string;
   role: string;
   lang: string;
 }
@@ -19,6 +20,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (token: string, user: User) => void;
   logout: () => Promise<void>;
+  updateUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -27,6 +29,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   login: () => {},
   logout: async () => {},
+  updateUser: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -80,6 +83,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("nbk-access-token", token);
     setAccessToken(token);
     setUser(userData);
+    // Sync language preference from user profile
+    if (userData.lang) {
+      localStorage.setItem("nbk-lang", userData.lang);
+      document.documentElement.lang = userData.lang;
+    }
   };
 
   const logout = async () => {
@@ -91,8 +99,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const updateUser = (userData: User) => {
+    setUser(userData);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, accessToken, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, isLoading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -6,11 +6,13 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLang } from "@/context/LangContext";
 import { useAuth } from "@/context/AuthContext";
+import { api } from "@/services/api";
+import type { User } from "@/context/AuthContext";
 import styles from "./page.module.css";
 
 export default function SettingsPage() {
   const { t } = useLang();
-  const { user } = useAuth();
+  const { user, accessToken, updateUser, logout } = useAuth();
   const router = useRouter();
 
   const [editing, setEditing] = useState<Record<string, boolean>>({});
@@ -19,13 +21,15 @@ export default function SettingsPage() {
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [saveLoading, setSaveLoading] = useState(false);
 
   const [deletePassword, setDeletePassword] = useState("");
   const [showDeletePw, setShowDeletePw] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
-  if (!user) {
+  if (!user || !accessToken) {
     return (
       <main>
         <Header />
@@ -44,18 +48,23 @@ export default function SettingsPage() {
     { key: "id", label: t.settings.id, value: user.id.slice(0, 8).toUpperCase(), editable: false },
     { key: "birth_date", label: t.settings.birthDate, value: user.birth_date || "—", editable: true, type: "date" },
     { key: "email", label: t.settings.email, value: user.email, editable: true, type: "email" },
-    { key: "password", label: t.settings.password, value: t.settings.passwordHidden, editable: true, type: "password" },
+    { key: "new_password", label: t.settings.password, value: t.settings.passwordHidden, editable: true, type: "password" },
   ];
 
   const startEdit = (key: string, currentValue: string) => {
     setEditing((prev) => ({ ...prev, [key]: true }));
-    setEditValues((prev) => ({ ...prev, [key]: key === "password" ? "" : currentValue }));
+    setEditValues((prev) => ({ ...prev, [key]: key === "new_password" ? "" : currentValue }));
     setSaveSuccess(false);
     setSaveError("");
   };
 
   const cancelEdit = (key: string) => {
     setEditing((prev) => ({ ...prev, [key]: false }));
+    setEditValues((prev) => {
+      const copy = { ...prev };
+      delete copy[key];
+      return copy;
+    });
   };
 
   const hasEdits = Object.values(editing).some(Boolean);
@@ -63,13 +72,44 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setSaveSuccess(false);
     setSaveError("");
+
     if (!confirmPassword) {
       setSaveError(t.settings.saveError);
       return;
     }
-    // TODO: API call with editValues + confirmPassword
+
+    // Build updates object from edited fields only
+    const updates: Record<string, string> = {};
+    for (const [key, isEditing] of Object.entries(editing)) {
+      if (isEditing && editValues[key] !== undefined && editValues[key] !== "") {
+        updates[key] = editValues[key];
+      }
+    }
+
+    if (Object.keys(updates).length === 0) {
+      setSaveError(t.settings.saveError);
+      return;
+    }
+
+    setSaveLoading(true);
+    const res = await api.auth.updateProfile(accessToken, {
+      password: confirmPassword,
+      updates,
+    });
+    setSaveLoading(false);
+
+    if (res.error) {
+      setSaveError(res.error === "Incorrect password" ? t.settings.saveError : res.error);
+      return;
+    }
+
+    if (res.data?.user) {
+      updateUser(res.data.user as User);
+    }
+
     setSaveSuccess(true);
     setEditing({});
+    setEditValues({});
     setConfirmPassword("");
   };
 
@@ -83,8 +123,18 @@ export default function SettingsPage() {
   };
 
   const handleDeleteConfirm = async () => {
-    // TODO: API call to delete account
+    setDeleteLoading(true);
+    const res = await api.auth.deleteAccount(accessToken, { password: deletePassword });
+    setDeleteLoading(false);
+
+    if (res.error) {
+      setShowDeleteModal(false);
+      setDeleteError(res.error === "Incorrect password" ? t.settings.deleteError : res.error);
+      return;
+    }
+
     setShowDeleteModal(false);
+    await logout();
     router.push("/");
   };
 
@@ -123,17 +173,11 @@ export default function SettingsPage() {
                 {field.editable && (
                   <div>
                     {editing[field.key] ? (
-                      <button
-                        className={styles.cancelBtn}
-                        onClick={() => cancelEdit(field.key)}
-                      >
+                      <button className={styles.cancelBtn} onClick={() => cancelEdit(field.key)}>
                         {t.settings.cancel}
                       </button>
                     ) : (
-                      <button
-                        className={styles.editBtn}
-                        onClick={() => startEdit(field.key, field.value)}
-                      >
+                      <button className={styles.editBtn} onClick={() => startEdit(field.key, field.value)}>
                         {t.settings.edit}
                       </button>
                     )}
@@ -154,28 +198,20 @@ export default function SettingsPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
-                <button
-                  type="button"
-                  className={styles.eyeBtn}
-                  onClick={() => setShowConfirmPw(!showConfirmPw)}
-                >
+                <button type="button" className={styles.eyeBtn} onClick={() => setShowConfirmPw(!showConfirmPw)}>
                   {showConfirmPw ? "🙈" : "👁️"}
                 </button>
               </div>
-              <a href="#" className={styles.forgotLink} onClick={(e) => { e.preventDefault(); /* TODO: trigger forgot */ }}>
+              <a href="#" className={styles.forgotLink} onClick={(e) => e.preventDefault()}>
                 {t.settings.forgotPassword}
               </a>
 
-              <button className={styles.saveBtn} onClick={handleSave}>
-                {t.settings.save}
+              <button className={styles.saveBtn} onClick={handleSave} disabled={saveLoading}>
+                {saveLoading ? "..." : t.settings.save}
               </button>
 
-              {saveSuccess && (
-                <p className={styles.successMsg}>✓ {t.settings.saveSuccess}</p>
-              )}
-              {saveError && (
-                <p className={styles.errorMsg}>{t.settings.saveError}</p>
-              )}
+              {saveSuccess && <p className={styles.successMsg}>✓ {t.settings.saveSuccess}</p>}
+              {saveError && <p className={styles.errorMsg}>{saveError}</p>}
             </div>
           )}
         </section>
@@ -194,19 +230,15 @@ export default function SettingsPage() {
               value={deletePassword}
               onChange={(e) => setDeletePassword(e.target.value)}
             />
-            <button
-              type="button"
-              className={styles.eyeBtn}
-              onClick={() => setShowDeletePw(!showDeletePw)}
-            >
+            <button type="button" className={styles.eyeBtn} onClick={() => setShowDeletePw(!showDeletePw)}>
               {showDeletePw ? "🙈" : "👁️"}
             </button>
           </div>
-          <a href="#" className={styles.forgotLink} onClick={(e) => { e.preventDefault(); /* TODO: trigger forgot */ }}>
+          <a href="#" className={styles.forgotLink} onClick={(e) => e.preventDefault()}>
             {t.settings.forgotPassword}
           </a>
 
-          {deleteError && <p className={styles.errorMsg}>{t.settings.deleteError}</p>}
+          {deleteError && <p className={styles.errorMsg}>{deleteError}</p>}
 
           <button className={styles.deleteBtn} onClick={handleDeleteRequest}>
             {t.settings.deleteBtn}
@@ -226,8 +258,8 @@ export default function SettingsPage() {
               <button className={styles.modalCancel} onClick={() => setShowDeleteModal(false)}>
                 {t.settings.deleteModalCancel}
               </button>
-              <button className={styles.modalConfirm} onClick={handleDeleteConfirm}>
-                {t.settings.deleteModalConfirm}
+              <button className={styles.modalConfirm} onClick={handleDeleteConfirm} disabled={deleteLoading}>
+                {deleteLoading ? "..." : t.settings.deleteModalConfirm}
               </button>
             </div>
           </div>
