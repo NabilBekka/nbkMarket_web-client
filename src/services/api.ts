@@ -51,13 +51,17 @@ export const api = {
         { method: "POST", body: JSON.stringify(body) }
       ),
 
+    resendCode: (body: { email: string }) =>
+      request("/auth/resend-code", { method: "POST", body: JSON.stringify(body) }),
+
+    checkUsername: (username: string) =>
+      request<{ available: boolean }>(`/auth/check-username/${username}`),
+
     login: (body: { email: string; password: string }) =>
-      request<{
-        accessToken: string;
-        user: Record<string, unknown>;
-        needsVerification?: boolean;
-        email?: string;
-      }>("/auth/login", { method: "POST", body: JSON.stringify(body) }),
+      request<{ accessToken: string; user: Record<string, unknown> }>(
+        "/auth/login",
+        { method: "POST", body: JSON.stringify(body) }
+      ),
 
     forgotPassword: (body: { email: string; lang?: string }) =>
       request("/auth/forgot-password", { method: "POST", body: JSON.stringify(body) }),
@@ -69,14 +73,9 @@ export const api = {
       request<{ accessToken: string }>("/auth/refresh-token", { method: "POST" }),
 
     logout: (token: string) =>
-      request("/auth/logout", {
-        method: "POST",
-        headers: authHeaders(token),
-      }),
+      request("/auth/logout", { method: "POST", headers: authHeaders(token) }),
 
     getMe: (token: string) =>
-      request<{ user: Record<string, unknown> }>("/auth/me", {
-        headers: authHeaders(token),
-      }),
+      request<{ user: Record<string, unknown> }>("/auth/me", { headers: authHeaders(token) }),
   },
 };

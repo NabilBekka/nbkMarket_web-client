@@ -42,7 +42,7 @@ export default function VerifyEmailForm({ email, onSuccess, onBack }: VerifyEmai
   };
 
   const handleResend = async () => {
-    await api.auth.login({ email, password: "" }).catch(() => {});
+    await api.auth.resendCode({ email });
   };
 
   return (

@@ -44,6 +44,22 @@
   border-color: #ccc;
 }
 
+.googleBtnDisabled {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #f9f9f9;
+  font-size: 14px;
+  font-weight: 500;
+  color: #bbb;
+  cursor: not-allowed;
+}
+
 .googleIcon {
   flex-shrink: 0;
 }
@@ -113,6 +129,27 @@
 
 .inputError:focus {
   border-color: #E53935;
+}
+
+.inputOk {
+  border-color: #4CAF50;
+}
+
+.inputOk:focus {
+  border-color: #4CAF50;
+}
+
+.checkingText {
+  font-size: 11px;
+  color: var(--text-gray);
+  margin-top: 4px;
+}
+
+.okText {
+  font-size: 11px;
+  color: #4CAF50;
+  margin-top: 4px;
+  font-weight: 500;
 }
 
 .errorText {
