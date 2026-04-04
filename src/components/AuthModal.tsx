@@ -6,8 +6,16 @@ import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
 import VerifyEmailForm from "./VerifyEmailForm";
+import GoogleRegisterForm from "./GoogleRegisterForm";
 
-type View = "login" | "register" | "forgot" | "verify";
+type View = "login" | "register" | "forgot" | "verify" | "google-register";
+
+interface GoogleData {
+  googleId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+}
 
 interface AuthModalProps {
   onClose: () => void;
@@ -16,10 +24,16 @@ interface AuthModalProps {
 export default function AuthModal({ onClose }: AuthModalProps) {
   const [view, setView] = useState<View>("login");
   const [verifyEmail, setVerifyEmail] = useState("");
+  const [googleData, setGoogleData] = useState<GoogleData | null>(null);
 
   const goToVerify = (email: string) => {
     setVerifyEmail(email);
     setView("verify");
+  };
+
+  const goToGoogleRegister = (data: GoogleData) => {
+    setGoogleData(data);
+    setView("google-register");
   };
 
   return (
@@ -34,6 +48,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
             onSwitchRegister={() => setView("register")}
             onSwitchForgot={() => setView("forgot")}
             onNeedsVerify={goToVerify}
+            onGoogleRegister={goToGoogleRegister}
             onSuccess={onClose}
           />
         )}
@@ -42,6 +57,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           <RegisterForm
             onSwitchLogin={() => setView("login")}
             onNeedsVerify={goToVerify}
+            onGoogleRegister={goToGoogleRegister}
           />
         )}
 
@@ -52,6 +68,14 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         {view === "verify" && (
           <VerifyEmailForm
             email={verifyEmail}
+            onSuccess={onClose}
+            onBack={() => setView("login")}
+          />
+        )}
+
+        {view === "google-register" && googleData && (
+          <GoogleRegisterForm
+            googleData={googleData}
             onSuccess={onClose}
             onBack={() => setView("login")}
           />

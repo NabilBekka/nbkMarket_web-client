@@ -107,4 +107,15 @@ export const en = {
     success: "Password reset! You can now log in.",
     codeError: "Invalid or expired code",
   },
+  googleRegister: {
+    title: "Complete your registration",
+    subtitle: "Your Google account has been verified. Please fill in the remaining details.",
+    username: "Username",
+    usernamePlaceholder: "Choose a username",
+    usernameError: "Username already taken",
+    birthDate: "Date of birth",
+    password: "Password",
+    passwordPlaceholder: "Create a password",
+    submit: "Create my account",
+  },
 };

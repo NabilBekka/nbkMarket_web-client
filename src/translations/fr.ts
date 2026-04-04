@@ -107,4 +107,15 @@ export const fr = {
     success: "Mot de passe réinitialisé ! Vous pouvez vous connecter.",
     codeError: "Code invalide ou expiré",
   },
+  googleRegister: {
+    title: "Complétez votre inscription",
+    subtitle: "Votre compte Google a été vérifié. Veuillez remplir les informations restantes.",
+    username: "Nom d'utilisateur",
+    usernamePlaceholder: "Choisissez un pseudo",
+    usernameError: "Ce pseudo est déjà pris",
+    birthDate: "Date de naissance",
+    password: "Mot de passe",
+    passwordPlaceholder: "Créez un mot de passe",
+    submit: "Créer mon compte",
+  },
 };

@@ -57,6 +57,33 @@ export const api = {
     checkUsername: (username: string) =>
       request<{ available: boolean }>(`/auth/check-username/${username}`),
 
+    google: (body: { credential: string }) =>
+      request<{
+        accessToken?: string;
+        user?: Record<string, unknown>;
+        isExistingUser?: boolean;
+        googleData?: {
+          googleId: string;
+          email: string;
+          firstName: string;
+          lastName: string;
+        };
+      }>("/auth/google", { method: "POST", body: JSON.stringify(body) }),
+
+    googleRegister: (body: {
+      googleId: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      username: string;
+      password: string;
+      birthDate?: string;
+    }) =>
+      request<{ accessToken: string; user: Record<string, unknown> }>(
+        "/auth/google/register",
+        { method: "POST", body: JSON.stringify(body) }
+      ),
+
     login: (body: { email: string; password: string }) =>
       request<{ accessToken: string; user: Record<string, unknown> }>(
         "/auth/login",
