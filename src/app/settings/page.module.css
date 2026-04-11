@@ -391,3 +391,10 @@
     text-align: center;
   }
 }
+
+.fieldInputError { border-color: #E53935 !important; }
+.fieldErrorText { font-size: 11px; color: #E53935; margin-top: 4px; font-weight: 500; }
+.checks { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; }
+.checkOk { font-size: 11px; color: #4CAF50; font-weight: 500; }
+.checkFail { font-size: 11px; color: #E53935; font-weight: 500; }
+.passwordWrap .fieldInput { padding-right: 44px; }
