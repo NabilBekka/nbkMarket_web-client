@@ -1,14 +1,22 @@
 export const fr = {
   header: {
-    explore: "Explorer",
-    categories: "Catégories",
-    wilayas: "Wilayas",
-    searchPlaceholder: "Rechercher un produit, une boutique...",
+    searchPlaceholder: "Rechercher un produit ou une boutique...",
+    searchProduct: "Produit",
+    searchShop: "Boutique",
     login: "Connexion",
     logout: "Déconnexion",
     settings: "Paramètres du compte",
   },
   categories: ["Tout", "Mode", "Électronique", "Maison", "Beauté", "Alimentation", "Artisanat", "Sport"],
+  search: {
+    resultsFor: "Résultats pour",
+    noResults: "Aucun résultat trouvé.",
+    products: "produits",
+    shops: "boutiques",
+    da: "DA",
+    notRated: "Pas noté encore",
+    viewShop: "Voir la boutique",
+  },
   home: {
     trending: "Tendances à Alger",
     popularShops: "Boutiques populaires",

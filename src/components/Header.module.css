@@ -2,66 +2,95 @@
   background: var(--navy-dark);
   padding: 14px 32px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-}
-
-.left {
-  display: flex;
-  align-items: center;
-  gap: 28px;
-}
-
-.logo {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--white);
-  white-space: nowrap;
-}
-
-.logoAccent {
-  color: var(--accent);
-}
-
-.nav {
-  display: flex;
   gap: 20px;
 }
 
-.nav a {
+.logo { font-size: 20px; font-weight: 800; color: var(--white); text-decoration: none; white-space: nowrap; }
+.logoAccent { color: var(--accent); }
+
+/* Search bar - enlarged, takes available space */
+.searchWrap {
+  flex: 1;
+  max-width: 600px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  overflow: visible;
+}
+
+.search {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px 16px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
-  transition: color 0.2s;
-  white-space: nowrap;
-}
-
-.nav a:hover {
   color: var(--white);
+  outline: none;
+  min-width: 0;
 }
+.search::placeholder { color: rgba(255, 255, 255, 0.4); }
+.search:focus { background: transparent; }
+.searchWrap:focus-within { background: rgba(255, 255, 255, 0.12); }
 
+.searchSelect {
+  background: transparent;
+  border: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 10px;
+  outline: none;
+  cursor: pointer;
+  appearance: auto;
+}
+.searchSelect option { background: var(--navy-dark); color: var(--white); }
+
+.searchBtn {
+  background: transparent;
+  border: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+.searchBtn:hover { color: var(--white); }
+
+/* Autocomplete suggestions */
+.suggestDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 60;
+  overflow: hidden;
+}
+.suggestItem {
+  display: flex; justify-content: space-between; align-items: center; width: 100%;
+  padding: 11px 16px; border: none; background: none; text-align: left;
+  cursor: pointer; transition: background 0.12s; gap: 12px;
+}
+.suggestItem:hover { background: #F5F5F5; }
+.suggestName { font-size: 13px; font-weight: 500; color: var(--text-dark); }
+.suggestPrice { font-size: 12px; color: var(--accent); font-weight: 600; white-space: nowrap; }
+
+/* Right side - pushed to far right */
 .right {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.search {
-  background: rgba(255, 255, 255, 0.08);
-  border: none;
-  border-radius: 8px;
-  padding: 9px 16px;
-  font-size: 13px;
-  color: var(--white);
-  width: 280px;
-  outline: none;
-}
-
-.search::placeholder {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.search:focus {
-  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .loginBtn {
@@ -76,281 +105,73 @@
   transition: opacity 0.2s;
   white-space: nowrap;
 }
+.loginBtn:hover { opacity: 0.9; }
 
-.loginBtn:hover {
-  opacity: 0.9;
-}
-
-.avatarWrap {
-  position: relative;
-}
-
-.avatarBtn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--navy-dark);
-  border: none;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s;
-  text-transform: uppercase;
-}
-
-.avatarBtn:hover {
-  opacity: 0.85;
-}
-
-.dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  background: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-  min-width: 240px;
-  z-index: 100;
-  overflow: hidden;
-}
-
-.dropdownHeader {
-  padding: 14px 16px;
-}
-
-.dropdownName {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-dark);
-}
-
-.dropdownEmail {
-  display: block;
-  font-size: 12px;
-  color: var(--text-gray);
-  margin-top: 2px;
-}
-
-.dropdownDivider {
-  height: 1px;
-  background: #eee;
-}
-
-.dropdownLang {
-  display: flex;
-  gap: 4px;
-  padding: 8px 16px;
-}
-
-.dropdownLangBtn {
-  flex: 1;
-  padding: 7px;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  background: var(--white);
-  font-size: 12px;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.2s;
-  color: var(--text-gray);
-}
-
-.dropdownLangBtn:hover {
-  border-color: #ccc;
-}
-
-.dropdownLangActive {
-  background: var(--bg-gray);
-  border-color: var(--accent);
-  color: var(--text-dark);
-  font-weight: 600;
-}
-
-.dropdownItem {
-  display: block;
-  width: 100%;
-  padding: 10px 16px;
-  font-size: 13px;
-  color: var(--text-dark);
-  text-align: left;
-  transition: background 0.15s;
-  text-decoration: none;
-}
-
-.dropdownItem:hover {
-  background: var(--bg-gray);
-}
-
-.dropdownItemDanger {
-  display: block;
-  width: 100%;
-  padding: 10px 16px;
-  font-size: 13px;
-  color: #E53935;
-  text-align: left;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.dropdownItemDanger:hover {
-  background: #FFF0F0;
-}
-
-.langSwitch {
-  display: flex;
-  gap: 4px;
-  margin-left: 4px;
-}
-
-.langBtn {
-  padding: 5px 6px;
-  background: transparent;
-  border: 2px solid transparent;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  opacity: 0.5;
-}
-
-.langBtn:hover {
-  opacity: 0.8;
-}
-
-.langActive {
-  opacity: 1;
-  border-color: var(--accent);
-}
-
-.flag {
-  display: block;
-  border-radius: 2px;
-}
-
-.categories {
-  background: var(--navy-mid);
-  padding: 12px 32px;
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-}
-
-.pill {
-  padding: 6px 16px;
-  border-radius: 20px;
+.langSelect {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.85);
   font-size: 12px;
   font-weight: 500;
-  white-space: nowrap;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.7);
-  background: transparent;
+  padding: 7px 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  outline: none;
+  appearance: auto;
 }
+.langSelect option { background: var(--navy-dark); color: var(--white); }
 
-.pill:hover {
-  border-color: rgba(255, 255, 255, 0.3);
-  color: var(--white);
+/* Avatar dropdown */
+.avatarWrap { position: relative; }
+.avatarBtn {
+  width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--accent);
+  background: rgba(255,255,255,0.1); color: var(--white); font-size: 13px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
-
-.pillActive {
-  background: var(--accent);
-  color: var(--navy-dark);
-  border-color: var(--accent);
+.dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0; width: 260px; background: var(--white);
+  border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); border: 1px solid #eee;
+  z-index: 100; overflow: hidden;
 }
+.dropdownHeader { padding: 14px 16px; }
+.dropdownName { display: block; font-size: 14px; font-weight: 600; color: var(--text-dark); }
+.dropdownEmail { display: block; font-size: 12px; color: var(--text-gray); margin-top: 2px; }
+.dropdownDivider { height: 1px; background: #f0f0f0; }
+.dropdownLang { display: flex; gap: 4px; padding: 10px 16px; }
+.dropdownLangBtn {
+  flex: 1; padding: 6px; border: 1px solid #eee; border-radius: 6px; background: none;
+  font-size: 12px; cursor: pointer; text-align: center; color: var(--text-gray);
+}
+.dropdownLangBtn:hover { border-color: #ccc; }
+.dropdownLangActive { background: #F0F4FF; border-color: var(--accent); color: var(--text-dark); font-weight: 600; }
+.dropdownItem {
+  display: block; padding: 10px 16px; font-size: 13px; color: var(--text-dark);
+  text-decoration: none; cursor: pointer; transition: background 0.12s;
+}
+.dropdownItem:hover { background: #F9F9F9; }
+.dropdownItemDanger {
+  display: block; width: 100%; padding: 10px 16px; font-size: 13px; color: #E53935;
+  text-align: left; border: none; background: none; cursor: pointer;
+}
+.dropdownItemDanger:hover { background: #FFF5F5; }
 
-/* ===== RESPONSIVE ===== */
-
-/* Large screens 25"+ : cap content width */
+/* Responsive */
 @media (min-width: 1800px) {
-  .topBar {
-    max-width: 1600px;
-    margin: 0 auto;
-    padding: 14px 48px;
-  }
-  .categories {
-    max-width: 1600px;
-    margin: 0 auto;
-    padding: 12px 48px;
-  }
+  .topBar { max-width: 1600px; margin: 0 auto; padding: 14px 48px; }
 }
-
-/* Tablet */
 @media (max-width: 900px) {
-  .topBar {
-    padding: 12px 16px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .nav {
-    display: none;
-  }
-  .search {
-    width: 180px;
-  }
-  .categories {
-    padding: 10px 16px;
-  }
+  .topBar { padding: 12px 16px; gap: 10px; }
+  .searchWrap { max-width: none; }
 }
-
-/* Mobile */
 @media (max-width: 600px) {
-  .topBar {
-    padding: 10px 12px;
-    gap: 8px;
-  }
-  .logo {
-    font-size: 17px;
-  }
-  .right {
-    gap: 8px;
-  }
-  .search {
-    width: 100%;
-    order: 10;
-  }
-  .loginBtn {
-    padding: 8px 14px;
-    font-size: 12px;
-  }
-  .categories {
-    padding: 8px 12px;
-    gap: 6px;
-  }
-  .pill {
-    padding: 5px 12px;
-    font-size: 11px;
-  }
+  .topBar { padding: 10px 12px; gap: 8px; flex-wrap: wrap; }
+  .logo { font-size: 17px; }
+  .searchWrap { order: 10; flex-basis: 100%; max-width: 100%; }
+  .right { gap: 8px; }
+  .loginBtn { padding: 8px 14px; font-size: 12px; }
 }
-
-/* Galaxy Z Fold 5 */
 @media (max-width: 380px) {
-  .topBar {
-    padding: 8px 8px;
-  }
-  .logo {
-    font-size: 15px;
-  }
-  .loginBtn {
-    padding: 6px 10px;
-    font-size: 11px;
-  }
-  .langBtn {
-    padding: 3px 4px;
-  }
-  .flag {
-    width: 16px;
-    height: 11px;
-  }
-  .categories {
-    padding: 8px 8px;
-  }
+  .topBar { padding: 8px; }
+  .logo { font-size: 15px; }
+  .loginBtn { padding: 6px 10px; font-size: 11px; }
 }

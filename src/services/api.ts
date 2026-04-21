@@ -130,4 +130,12 @@ export const api = {
         body: JSON.stringify(body),
       }),
   },
+  search: {
+    suggest: (q: string, type: "product" | "shop", lang: string) =>
+      request<{ suggestions: { id: string; name: string; price?: string; score: number }[] }>(`/search/suggest?q=${encodeURIComponent(q)}&type=${type}&lang=${lang}`),
+    products: (q: string, lang: string, limit = 20, offset = 0) =>
+      request<{ results: { id: string; title: string; price: number; main_image: string; avg_rating: number | null; review_count: number; company_name: string; merchant_id: string; category_name: string | null }[]; total: number }>(`/search/products?q=${encodeURIComponent(q)}&lang=${lang}&limit=${limit}&offset=${offset}`),
+    shops: (q: string, lang: string, limit = 20, offset = 0) =>
+      request<{ results: { id: string; company_name: string; category_name: string | null; parent_category_name: string | null; wilaya_name: string | null; wilaya_code: number | null }[]; total: number }>(`/search/shops?q=${encodeURIComponent(q)}&lang=${lang}&limit=${limit}&offset=${offset}`),
+  },
 };

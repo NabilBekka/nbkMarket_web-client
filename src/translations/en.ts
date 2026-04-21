@@ -1,14 +1,22 @@
 export const en = {
   header: {
-    explore: "Explore",
-    categories: "Categories",
-    wilayas: "Wilayas",
-    searchPlaceholder: "Search for a product, a shop...",
+    searchPlaceholder: "Search for a product or a shop...",
+    searchProduct: "Product",
+    searchShop: "Shop",
     login: "Login",
     logout: "Logout",
     settings: "Account settings",
   },
   categories: ["All", "Fashion", "Electronics", "Home", "Beauty", "Food", "Crafts", "Sports"],
+  search: {
+    resultsFor: "Results for",
+    noResults: "No results found.",
+    products: "products",
+    shops: "shops",
+    da: "DA",
+    notRated: "Not rated yet",
+    viewShop: "View shop",
+  },
   home: {
     trending: "Trending in Algiers",
     popularShops: "Popular shops",

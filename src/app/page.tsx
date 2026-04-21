@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import ShopCard from "@/components/ShopCard";
+import SearchResults from "@/components/SearchResults";
 import Footer from "@/components/Footer";
 import { useLang } from "@/context/LangContext";
 import styles from "./page.module.css";
@@ -29,39 +31,52 @@ const shops = [
 
 export default function Home() {
   const { t } = useLang();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchType, setSearchType] = useState<"product" | "shop">("product");
+  const [isSearching, setIsSearching] = useState(false);
+
+  const handleSearch = (query: string, type: "product" | "shop") => {
+    setSearchQuery(query);
+    setSearchType(type);
+    setIsSearching(true);
+  };
 
   return (
     <main>
-      <Header />
+      <Header onSearch={handleSearch} />
 
-      <div className={styles.content}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>{t.home.trending}</h2>
-          <div className={styles.sectionActions}>
-            <span className={styles.wilayaTag}>📍 Alger</span>
-            <span className={styles.viewAll}>{t.home.viewAll}</span>
-          </div>
-        </div>
-
-        <div className={styles.productsGrid}>
-          {products.map((product) => (
-            <ProductCard key={product.name} {...product} />
-          ))}
-        </div>
-
-        <div className={styles.shopsSection}>
+      {isSearching ? (
+        <SearchResults query={searchQuery} type={searchType} />
+      ) : (
+        <div className={styles.content}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>{t.home.popularShops}</h2>
-            <span className={styles.viewAll}>{t.home.viewAll}</span>
+            <h2 className={styles.sectionTitle}>{t.home.trending}</h2>
+            <div className={styles.sectionActions}>
+              <span className={styles.wilayaTag}>📍 Alger</span>
+              <span className={styles.viewAll}>{t.home.viewAll}</span>
+            </div>
           </div>
 
-          <div className={styles.shopsGrid}>
-            {shops.map((shop) => (
-              <ShopCard key={shop.name} {...shop} productsLabel={t.home.products} />
+          <div className={styles.productsGrid}>
+            {products.map((product) => (
+              <ProductCard key={product.name} {...product} />
             ))}
           </div>
+
+          <div className={styles.shopsSection}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>{t.home.popularShops}</h2>
+              <span className={styles.viewAll}>{t.home.viewAll}</span>
+            </div>
+
+            <div className={styles.shopsGrid}>
+              {shops.map((shop) => (
+                <ShopCard key={shop.name} {...shop} productsLabel={t.home.products} />
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       <Footer />
     </main>

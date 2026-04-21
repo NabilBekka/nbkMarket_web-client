@@ -36,6 +36,16 @@ a {
   color: inherit;
 }
 
+main {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main > *:not(header):not(footer) {
+  flex: 1;
+}
+
 @media (min-width: 2200px) {
   body {
     max-width: 2200px;
